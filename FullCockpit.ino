@@ -1,70 +1,41 @@
 #include <Joystick.h>
 
-Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK, 32, 2,
-                    true, true, true,
-                    true, true, true,
-                    false, false, false,
-                    false, false);
+Joystick_ Joystick1(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK, 32, 2,
+                   true, true, true,
+                   true, true, true,
+                   false, false, false,
+                   false, false);
 
-void setup() {
-  
+const int pins[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                    12, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                    31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                    41, 42,
+                    // Not button pins: 11.
+                    43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53};
+
+int maxX1, minX1, maxY1, minY1, maxZ1, minZ1, maxRx1, minRx1, maxRy1, minRy1, maxRz1, minRz1 = 512;
+// int maxX2, minX2, maxY2, minY2, maxZ2, minZ2, maxRx2, minRx2, maxRy2, minRy2, maxRz2, minRz2 = 512;
+void setup()
+{
+
   // Initialize Button Pins
-  for (int index = 4; index < 12; index++)
+  for (int i = 0; i < 32; i++)
   {
-    pinMode(index, INPUT_PULLUP);
+    pinMode(pins[i], INPUT_PULLUP);
   }
 
   // Initialize Joystick Library
-  Joystick.begin(false);
+  Joystick1.begin(false);
 }
 
-// Last state of the pins
-int lastButtonState[2][4] = {{0,0,0,0}, {0,0,0,0}};
+void loop()
+{
 
-void loop() {
-
-  bool valueChanged[2] = {false, false};
-  int currentPin = 4;
-
-  // Read pin values
-  for (int hatSwitch = 0; hatSwitch < 2; hatSwitch++)
+  for (int i = 0; i < 32; i++)
   {
-    for (int index = 0; index < 4; index++)
-    {
-      int currentButtonState = !digitalRead(currentPin++);
-      if (currentButtonState != lastButtonState[hatSwitch][index])
-      {
-        valueChanged[hatSwitch] = true;
-        lastButtonStategitg
-    }
+    Joystick1.setButton(i, !digitalRead(pins[i]));
   }
-
-  for (int hatSwitch = 0; hatSwitch < 2; hatSwitch++)
-  {
-    if (valueChanged[hatSwitch]) {
-      
-      if ((lastButtonState[hatSwitch][0] == 0)
-        && (lastButtonState[hatSwitch][1] == 0)
-        && (lastButtonState[hatSwitch][2] == 0)
-        && (lastButtonState[hatSwitch][3] == 0)) {
-          Joystick.setHatSwitch(hatSwitch, -1);
-      }
-      if (lastButtonState[hatSwitch][0] == 1) {
-        Joystick.setHatSwitch(hatSwitch, 0);
-      }
-      if (lastButtonState[hatSwitch][1] == 1) {
-        Joystick.setHatSwitch(hatSwitch, 90);
-      }
-      if (lastButtonState[hatSwitch][2] == 1) {
-        Joystick.setHatSwitch(hatSwitch, 180);
-      }
-      if (lastButtonState[hatSwitch][3] == 1) {
-        Joystick.setHatSwitch(hatSwitch, 270);
-      }
-      
-    } // if the value changed
-    
-  } // for each hat switch
-  Joystick.sendState();
+  Joystick1.sendState();
+  //Joystick2.sendState();
   delay(50);
 }
