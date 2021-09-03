@@ -16,6 +16,21 @@ const int pins[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 int maxX1, minX1, maxY1, minY1, maxZ1, minZ1, maxRx1, minRx1, maxRy1, minRy1, maxRz1, minRz1 = 512;
 // int maxX2, minX2, maxY2, minY2, maxZ2, minZ2, maxRx2, minRx2, maxRy2, minRy2, maxRz2, minRz2 = 512;
 
+// Encoders declarations
+
+const int numEncoders = 2;
+const int CLK[] = {44, 46}; // Pin 9 to clk on encoder
+const int DT[] = {45, 47};  // Pin 8 to DT on encoder
+
+int RotPosition[] = {0, 0};
+int rotation[2];
+int value[2];
+
+unsigned long currentTime;
+unsigned long loopTime;
+const int timeThreshold = 150;
+// End encoder declarations
+
 void readJoystickAxes(Joystick_ *joy1)
 {
   int axisRead = 0;
@@ -93,6 +108,102 @@ void readJoystickAxes(Joystick_ *joy1)
   //   minRz2 = axisRead;
   // joy2->setRzAxis(axisRead);
 }
+
+
+void setHatValue(Joystick_ *js, int encoderId, boolean side)
+{
+  switch (encoderId)
+  {
+  case 0:
+    if (side)
+    {
+      js->setHatSwitch(0, 90);
+    }
+    else
+    {
+      js->setHatSwitch(0, 270);
+    }
+    break;
+
+  case 1:
+    if (side)
+    {
+      js->setHatSwitch(0, 0);
+    }
+    else
+    {
+      js->setHatSwitch(0, 180);
+    }
+    break;
+
+  case 2:
+    if (side)
+    {
+      js->setHatSwitch(0, 45);
+    }
+    else
+    {
+      js->setHatSwitch(0, 225);
+    }
+    break;
+
+  case 3:
+    if (side)
+    {
+      js->setHatSwitch(0, 135);
+    }
+    else
+    {
+      js->setHatSwitch(0, 315);
+    }
+    break;
+
+  case 4:
+    if (side)
+    {
+      js->setHatSwitch(1, 90);
+    }
+    else
+    {
+      js->setHatSwitch(1, 270);
+    }
+    break;
+
+  case 5:
+    if (side)
+    {
+      js->setHatSwitch(1, 0);
+    }
+    else
+    {
+      js->setHatSwitch(1, 180);
+    }
+    break;
+
+  case 6:
+    if (side)
+    {
+      js->setHatSwitch(1, 45);
+    }
+    else
+    {
+      js->setHatSwitch(1, 225);
+    }
+    break;
+
+  case 7:
+    if (side)
+    {
+      js->setHatSwitch(1, 135);
+    }
+    else
+    {
+      js->setHatSwitch(1, 315);
+    }
+    break;
+  }
+}
+
 void setup()
 {
 
@@ -119,8 +230,19 @@ void setup()
 
   Joystick1.begin(false);
   //Joystick2.begin(false);
-  // Initialize Joystick Library
-  Joystick1.begin(false);
+
+  // Encoder setup
+  for (int i = 0; i < numEncoders; i++)
+  {
+    pinMode(CLK[i], INPUT_PULLUP);
+    pinMode(DT[i], INPUT_PULLUP);
+    rotation[i] = digitalRead(CLK[i]);
+  }
+
+  currentTime = millis();
+  loopTime = millis();
+  // End encoder setup
+
 }
 
 void loop()
@@ -133,7 +255,33 @@ void loop()
 
   // Axes
   readJoystickAxes(&Joystick1);
+
+  // Encoders
+  currentTime = millis();
+  unsigned long timeDiff = currentTime - loopTime;
+  for (int i = 0; i < numEncoders; i++)
+  {
+    value[i] = digitalRead(CLK[i]);
+    if (value[i] != rotation[i] && timeDiff > timeThreshold)
+    { // we use the DT pin to find out which way we turning.
+      if (digitalRead(DT[i]) != value[i])
+      { // Clockwise
+        RotPosition[i]++;
+        setHatValue(&Joystick1, i, true);
+      }
+      else
+      { //Counterclockwise
+        RotPosition[i]--;
+        setHatValue(&Joystick1, i, false);
+      }
+
+      loopTime = millis();
+    } else if (timeDiff > timeThreshold){
+      Joystick1.setHatSwitch(i, -1);
+    }
+    rotation[i] = value[i];
+  }
+  // End encoders
   Joystick1.sendState();
   //Joystick2.sendState();
-  delay(50);
 }
