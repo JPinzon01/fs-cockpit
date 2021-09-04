@@ -1,6 +1,6 @@
 #include <Joystick.h>
 
-Joystick_ Joystick1(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK, 32, 2,
+Joystick_ Joystick1(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK, 27, 2,
                     true, true, true,
                     true, true, true,
                     false, false, false,
@@ -8,23 +8,20 @@ Joystick_ Joystick1(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK, 32, 2,
 
 const int pins[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
                     12, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-                    31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-                    41, 42,
-                    // Not button pins: 11.
-                    43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53};
+                    31, 32, 33, 34, 35, 36, 37};
 
 int maxX1, minX1, maxY1, minY1, maxZ1, minZ1, maxRx1, minRx1, maxRy1, minRy1, maxRz1, minRz1 = 512;
 // int maxX2, minX2, maxY2, minY2, maxZ2, minZ2, maxRx2, minRx2, maxRy2, minRy2, maxRz2, minRz2 = 512;
 
 // Encoders declarations
 
-const int numEncoders = 2;
-const int CLK[] = {44, 46}; // Pin 9 to clk on encoder
-const int DT[] = {45, 47};  // Pin 8 to DT on encoder
+const int numEncoders = 4;
+const int CLK[] = {38,40,42,44}; // Pin 9 to clk on encoder
+const int DT[] = {39,41,43,45};  // Pin 8 to DT on encoder
 
-int RotPosition[] = {0, 0};
-int rotation[2];
-int value[2];
+int RotPosition[] = {0, 0, 0, 0};
+int rotation[4];
+int value[4];
 
 unsigned long currentTime;
 unsigned long loopTime;
@@ -208,7 +205,7 @@ void setup()
 {
 
   // Initialize Button Pins
-  for (int i = 0; i < 32; i++)
+  for (int i = 0; i < 27; i++)
   {
     pinMode(pins[i], INPUT_PULLUP);
   }
@@ -248,9 +245,15 @@ void setup()
 void loop()
 {
   // Buttons
-  for (int i = 0; i < 32; i++)
+  for (int i = 0; i < 27; i++)
   {
-    Joystick1.setButton(i, !digitalRead(pins[i]));
+    if (i < 12 || i > 17){
+      Joystick1.setButton(i, !digitalRead(pins[i]));
+    } else {
+      // This row are different buttons that work the other way.
+      Joystick1.setButton(i, digitalRead(pins[i]));
+    }
+    
   }
 
   // Axes
